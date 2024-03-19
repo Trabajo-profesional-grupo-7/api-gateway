@@ -4,6 +4,8 @@ from app.schemas.external_services import *
 import requests
 from fastapi import APIRouter
 from fastapi import status
+from app.utils.api_exception import *
+from app.utils.constants import *
 
 router = APIRouter()
 
@@ -18,8 +20,20 @@ async def flight_information(carrier_code: str, flight_number: str, departure_da
                 "departure_date": departure_date,
             },
         )
-        response.raise_for_status()  
+        
+        if response.status_code == 404:
+            raise APIException(code=FLIGTH_INFO_NOT_FOUND_ERROR, msg="FLIGTH_INFO_NOT_FOUND_ERROR")
+       
+        response_data = response.json()
 
-        return response.json()
-    except:
-        return status(500)   
+        return FlightInfo.model_construct(
+            flight_departure_date=response_data['flight_departure_date'],
+            flight_departure_time=response_data['flight_departure_time'],
+            flight_arrival_date=response_data['flight_arrival_date'],
+            flight_arrival_time=response_data['flight_arrival_time'],
+            departure_airport=response_data['departure_airport'],
+            arrival_airport=response_data['arrival_airport'],
+        )
+        
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
