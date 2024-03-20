@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 
 from app.routers.external_services import router as external_services_router
 from app.routers.autentication import router as autentication_router
+from app.routers.users import router as users_router
 
 app = FastAPI(title="API Gateway")
 
@@ -18,6 +19,7 @@ app.add_middleware(
 
 app.include_router(external_services_router)
 app.include_router(autentication_router)
+app.include_router(users_router)
 
 @app.get("/", include_in_schema=False)
 async def docs_redirect():
