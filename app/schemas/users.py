@@ -13,9 +13,16 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field("password", min_length=8)
 
+class UserId(BaseModel):
+    id: int
 
 class User(UserBase):
     id: int
 
     class Config:
         from_attributes = True
+
+class UserLogin(BaseModel):
+    email: EmailStr = Field("user@example.com")
+    password: str = Field("password", min_length=8)
+

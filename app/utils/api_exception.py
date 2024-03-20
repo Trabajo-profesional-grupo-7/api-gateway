@@ -22,6 +22,7 @@ class APIExceptionToHTTP:
             FLIGTH_INFO_NOT_FOUND_ERROR: status.HTTP_404_NOT_FOUND,
             INVALID_CREDENTIALS_ERROR: status.HTTP_401_UNAUTHORIZED,
             USER_EXISTS_ERROR: status.HTTP_409_CONFLICT,
+            LOGIN_ERROR: status.HTTP_400_BAD_REQUEST,
         }
 
     def convert(
