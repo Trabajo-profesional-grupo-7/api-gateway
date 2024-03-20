@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from app.routers.external_services import router as external_services_router
-from app.routers.autentication import router as autentication_router
-from app.routers.users import router as users_router
+from app.routers.external_services.external_services_router import router as external_services_router
+from app.routers.users.autentication_router import router as autentication_router
+from app.routers.users.users_router import router as users_router
 
 app = FastAPI(title="API Gateway")
 

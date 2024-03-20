@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.services.autentication_service import check_authentication
 
-from app.schemas.users import User, UserBase
+from app.schemas.users_schemas.users import User, UserBase
 
 from datetime import datetime
 
@@ -81,6 +81,8 @@ def update_user_profile(
                 preferences=response_data["preferences"],
                 id=response_data["id"],
             )
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
@@ -115,5 +117,7 @@ def delete_user_profile(
                 preferences=response_data["preferences"],
                 id=response_data["id"],
             )
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)

@@ -1,16 +1,17 @@
 from typing import Annotated
 import json
 
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from datetime import datetime
 
-from app.schemas.autentication import *
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.utils.api_exception import APIException, APIExceptionToHTTP
+
+from app.schemas.users_schemas.autentication import *
 from app.utils.api_exception import *
 from app.utils.constants import *
 
-from app.schemas.autentication import Token
-from app.schemas.users import User, UserCreate, UserLogin, UserId
+from app.schemas.users_schemas.users import User, UserCreate, UserLogin, UserId
 
 import requests
 
@@ -35,14 +36,15 @@ def verify_id_token(
         )
 
         if response.status_code != 200:
-            raise APIException(code=INVALID_CREDENTIALS_ERROR, msg="INVALID_CREDENTIALS_ERROR")
+            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
 
         authenticated_id = response.json()
 
         return UserId.model_construct(
             id=int(authenticated_id)
         )
-        
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
@@ -63,15 +65,17 @@ def refresh_token(
             headers={"Authorization": f"Bearer {credentials.credentials}"}
         )
 
-        if response.status_code == 401:
-            raise APIException(code=USER_UNAUTHORIZED_ERROR, msg=response.json()["detail"])
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
         tokens = response.json()
 
         return Token.model_construct(
-        token=tokens["token"],
-        refresh_token=tokens["refresh_token"],
-        token_type=tokens["token_type"],
+            token=tokens["token"],
+            refresh_token=tokens["refresh_token"],
+            token_type=tokens["token_type"],
         )
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
@@ -99,21 +103,20 @@ def create_user(user: UserCreate):
             "http://users:8000/users/signup",
             json=user_data
         )
-
-        if response.status_code == 409:
-            raise APIException(code=USER_EXISTS_ERROR, msg="Email already used")
-        elif not response.ok:
-            raise APIException(code=response.status_code, msg=response.text)
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
 
         response_data = response.json()
 
         return User.model_construct(
             username=response_data["username"],
             email=response_data["email"],
-            birth_date=response_data["birth_date"],
+            birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
             preferences=response_data["preferences"],
             id=response_data["id"],
         )
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
@@ -148,6 +151,7 @@ def login_user(user: UserLogin):
             refresh_token=tokens["refresh_token"],
             token_type=tokens["token_type"],
         )
-
+    except HTTPException as e:
+        raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
