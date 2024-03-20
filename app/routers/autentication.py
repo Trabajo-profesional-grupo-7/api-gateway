@@ -46,6 +46,36 @@ def verify_id_token(
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
+
+@router.post(
+    "/users/refresh_token",
+    tags=["Auth"],
+    status_code=200,
+    response_model=Token,
+    description="Refresh user token",
+)
+def refresh_token(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+):
+    try:
+        response = requests.post(
+            "http://users:8000/users/refresh_token",
+            headers={"Authorization": f"Bearer {credentials.credentials}"}
+        )
+
+        if response.status_code == 401:
+            raise APIException(code=USER_UNAUTHORIZED_ERROR, msg=response.json()["detail"])
+        tokens = response.json()
+
+        return Token.model_construct(
+        token=tokens["token"],
+        refresh_token=tokens["refresh_token"],
+        token_type=tokens["token_type"],
+        )
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+    
 # Sign up
 
 @router.post(
