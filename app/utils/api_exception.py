@@ -3,6 +3,7 @@ from typing import Union
 from fastapi import HTTPException, status
 
 from app.utils.constants import *
+from app.utils.api_exception import *
 
 
 class APIException(Exception):
@@ -20,6 +21,7 @@ class APIExceptionToHTTP:
             INTERNAL_SERVICE_ERROR: status.HTTP_500_INTERNAL_SERVER_ERROR,
             FLIGTH_INFO_NOT_FOUND_ERROR: status.HTTP_404_NOT_FOUND,
             INVALID_CREDENTIALS_ERROR: status.HTTP_401_UNAUTHORIZED,
+            USER_EXISTS_ERROR: status.HTTP_409_CONFLICT,
         }
 
     def convert(
