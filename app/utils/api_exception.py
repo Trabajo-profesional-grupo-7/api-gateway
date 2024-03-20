@@ -19,6 +19,7 @@ class APIExceptionToHTTP:
         self.error_dict = {
             INTERNAL_SERVICE_ERROR: status.HTTP_500_INTERNAL_SERVER_ERROR,
             FLIGTH_INFO_NOT_FOUND_ERROR: status.HTTP_404_NOT_FOUND,
+            INVALID_CREDENTIALS_ERROR: status.HTTP_401_UNAUTHORIZED,
         }
 
     def convert(
