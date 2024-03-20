@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from datetime import date
-from app.schemas.external_services_schemas.flights import *
-from app.schemas.external_services_schemas.weather import *
+from app.schemas.external_services_schemas.flights import FlightInfo
+from app.schemas.external_services_schemas.weather import Weather
+from app.schemas.external_services_schemas.currency import Currency
 import requests
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -12,6 +13,8 @@ from app.services.autentication_service import check_authentication
 
 router = APIRouter()
 security = HTTPBearer()
+
+# Flight
 
 @router.get("/flights/status", tags=["Flights"])
 async def flight_information(carrier_code: str, flight_number: str, departure_date: date, credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -44,6 +47,8 @@ async def flight_information(carrier_code: str, flight_number: str, departure_da
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
+# Weather
+
 @router.get(
     "/weather",
     tags=["Weather"],
@@ -72,6 +77,42 @@ def location_weather(location: str, credentials: HTTPAuthorizationCredentials = 
                 temperature= weather_data["temperature"],
                 uv_index= weather_data["uv_index"],
                 visibility= weather_data["visibility"],
+            )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+# Currency
+
+@router.get(
+    "/currency",
+    tags=["Currency"],
+    status_code=200,
+    description="Currency conversion",
+    response_model=Currency,
+)
+def currency_conversor(currency: str, interest_currency: str, amount: float, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        if check_authentication(credentials):
+            response = requests.get(
+                f"http://external-services:8002/currency",
+                params={
+                    "currency": currency,
+                    "interest_currency": interest_currency,
+                    "amount":amount,
+                },
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+        
+            currency_data = response.json()
+
+            return Currency.model_construct(
+                base_code= currency_data["base_code"],
+                target_code= currency_data["target_code"],
+                conversion=currency_data["conversion"],
             )
     except HTTPException as e:
         raise e

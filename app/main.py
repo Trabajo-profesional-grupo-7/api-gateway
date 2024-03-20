@@ -17,9 +17,9 @@ app.add_middleware(
     max_age=3600,
 )
 
-app.include_router(external_services_router)
 app.include_router(autentication_router)
 app.include_router(users_router)
+app.include_router(external_services_router)
 
 @app.get("/", include_in_schema=False)
 async def docs_redirect():
