@@ -1,6 +1,6 @@
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.services.autentication_service import check_authentication, get_user_id
@@ -103,3 +103,95 @@ def get_nearby_attractions(latitude: float, longitude:float, radius: float, cred
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
+# Save attraction
+
+@router.post(
+    "/attractions/save",
+    status_code=200,
+    tags=["Save Attraction"],
+    description="Saves an attraction for a user",
+)
+def save_attraction(attraction_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {
+                "user_id": current_user_id,
+                "attraction_id": attraction_id,
+            }
+
+            response = requests.post(
+                f"http://attractions:8003/attractions/save",
+                json=data
+            )
+
+            if response.status_code != 201:
+                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+
+            attractions_info = response.json()
+            return  attractions_info
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+# Unsave attraction
+
+@router.delete(
+    "/attractions/unsave",
+    status_code=204,
+    tags=["Save Attraction"],
+    description="Unsaves an attraction for a user",
+)
+def unsave_attraction(attraction_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {
+                "user_id": current_user_id,
+                "attraction_id": attraction_id,
+            }
+
+            response = requests.delete(
+                f"http://attractions:8003/attractions/unsave",
+                json=data
+            )
+            
+            if response.status_code != 204:
+                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+# Get saved attractions 
+
+@router.get(
+    "/attractions/save-list",
+    status_code=200,
+    tags=["Save Attraction"],
+    description="Returns a list of the attractions saved by an user",
+)
+def get_saved_attractions_list(
+    page: int = Query(0, description="Page number", ge=0),
+    size: int = Query(10, description="Number of items per page", ge=1, le=100), 
+    credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            response = requests.get(
+                f"http://attractions:8003/attractions/save-list?user_id={current_user_id}&page={page}&size={size}",
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
