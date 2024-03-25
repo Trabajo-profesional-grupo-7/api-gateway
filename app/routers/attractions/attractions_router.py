@@ -448,3 +448,46 @@ def get_done_attractions_list(
         raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
+
+
+###################
+#      RATE       #
+###################
+
+
+@router.post(
+    "/attractions/rate",
+    status_code=201,
+    tags=["Rate Attraction"],
+    description="Rates an attraction by an user",
+)
+def rate_attraction(
+    attraction_id: str,
+    rating: int = Query(5, description="Rating must be between 1 and 5"),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {
+                "user_id": current_user_id,
+                "attraction_id": attraction_id,
+                "rating": rating,
+            }
+
+            response = requests.post(
+                f"http://attractions:8003/attractions/rate", json=data
+            )
+
+            if response.status_code != 201:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
