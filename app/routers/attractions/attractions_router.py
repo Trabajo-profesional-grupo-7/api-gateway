@@ -341,3 +341,110 @@ def get_liked_attractions_list(
         raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
+
+
+###################
+#      DONE       #
+###################
+
+# DONE
+
+
+@router.post(
+    "/attractions/done",
+    status_code=201,
+    tags=["Done Attraction"],
+    description="Marks as done a attraction for a user",
+)
+def mark_as_done_attraction(
+    attraction_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {"user_id": current_user_id, "attraction_id": attraction_id}
+
+            response = requests.post(
+                f"http://attractions:8003/attractions/done", json=data
+            )
+
+            if response.status_code != 201:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# UNDONE
+
+
+@router.delete(
+    "/attractions/undone",
+    status_code=204,
+    tags=["Done Attraction"],
+    description="Marks as undone an attraction for a user",
+)
+def mark_as_undone_attraction(
+    attraction_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {"user_id": current_user_id, "attraction_id": attraction_id}
+
+            response = requests.delete(
+                f"http://attractions:8003/attractions/undone", json=data
+            )
+
+            if response.status_code != 204:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# ATTRACTIONS DONE LIST
+
+
+@router.get(
+    "/attractions/done-list",
+    status_code=200,
+    tags=["Done Attraction"],
+    description="Returns a list of the attractions done by an user",
+)
+def get_done_attractions_list(
+    page: int = Query(0, description="Page number", ge=0),
+    size: int = Query(10, description="Number of items per page", ge=1, le=100),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            response = requests.get(
+                f"http://attractions:8003/attractions/done-list?user_id={current_user_id}&page={page}&size={size}",
+            )
+
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
