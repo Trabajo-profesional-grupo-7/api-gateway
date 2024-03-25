@@ -8,6 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.users_schemas.autentication import *
 from app.schemas.users_schemas.users import User, UserCreate, UserId, UserLogin
+from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 from app.utils.constants import *
@@ -31,10 +32,7 @@ def verify_id_token(credentials: HTTPAuthorizationCredentials = Depends(security
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code, detail=response.json()["detail"]
-            )
+        handle_response_error(200, response)
 
         authenticated_id = response.json()
 
@@ -61,10 +59,8 @@ def refresh_token(
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code, detail=response.json()["detail"]
-            )
+        handle_response_error(200, response)
+
         tokens = response.json()
 
         return Token.model_construct(
@@ -99,10 +95,8 @@ def create_user(user: UserCreate):
         }
 
         response = requests.post("http://users:8000/users/signup", json=user_data)
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code, detail=response.json()["detail"]
-            )
+
+        handle_response_error(201, response)
 
         response_data = response.json()
 
@@ -138,8 +132,7 @@ def login_user(user: UserLogin):
 
         response = requests.post("http://users:8000/users/login", json=user_data)
 
-        if response.status_code == 400:
-            raise APIException(code=LOGIN_ERROR, msg="LOGIN_ERROR")
+        handle_response_error(200, response)
 
         tokens = response.json()
 

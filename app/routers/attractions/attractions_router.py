@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.attractions_schemas.attractions import AttractionByID
 from app.services.autentication_service import check_authentication, get_user_id
+from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
 
@@ -36,10 +37,7 @@ def get_attraction(
                 f"http://attractions:8003/attractions/byid/{attraction_id}",
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             attraction_info = response.json()
             return AttractionByID.model_construct(
@@ -61,7 +59,7 @@ def get_attraction(
 
 @router.post(
     "/attractions/search",
-    status_code=200,
+    status_code=201,
     tags=["Attractions"],
     description="Searches attractions given a text query",
 )
@@ -77,10 +75,7 @@ def search_attraction_by_text(
                 json=data,
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             attraction_info = response.json()
             return attraction_info
@@ -97,7 +92,7 @@ def search_attraction_by_text(
 @router.post(
     "/attractions/nearby/{latitude}/{longitude}/{radius}",
     status_code=201,
-    tags=["Get Attractions"],
+    tags=["Attractions"],
     description="Gets nearby attractions given a latitude and longitude",
 )
 def get_nearby_attractions(
@@ -112,10 +107,7 @@ def get_nearby_attractions(
                 f"http://attractions:8003/attractions/nearby/{latitude}/{longitude}/{radius}",
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             attractions_info = response.json()
             return attractions_info
@@ -154,10 +146,7 @@ def save_attraction(
                 f"http://attractions:8003/attractions/save", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             attractions_info = response.json()
             return attractions_info
@@ -193,10 +182,8 @@ def unsave_attraction(
                 f"http://attractions:8003/attractions/unsave", json=data
             )
 
-            if response.status_code != 204:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(204, response)
+
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -226,10 +213,9 @@ def get_saved_attractions_list(
                 f"http://attractions:8003/attractions/save-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
+
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -263,10 +249,7 @@ def like_attraction(
                 f"http://attractions:8003/attractions/like", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             return response.json()
     except HTTPException as e:
@@ -298,10 +281,8 @@ def unlike_attraction(
                 f"http://attractions:8003/attractions/unlike", json=data
             )
 
-            if response.status_code != 204:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(204, response)
+
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -331,10 +312,7 @@ def get_liked_attractions_list(
                 f"http://attractions:8003/attractions/like-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             return response.json()
     except HTTPException as e:
@@ -370,10 +348,7 @@ def mark_as_done_attraction(
                 f"http://attractions:8003/attractions/done", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             return response.json()
     except HTTPException as e:
@@ -405,10 +380,7 @@ def mark_as_undone_attraction(
                 f"http://attractions:8003/attractions/undone", json=data
             )
 
-            if response.status_code != 204:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(204, response)
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -438,10 +410,7 @@ def get_done_attractions_list(
                 f"http://attractions:8003/attractions/done-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             return response.json()
     except HTTPException as e:
@@ -481,10 +450,7 @@ def rate_attraction(
                 f"http://attractions:8003/attractions/rate", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             return response.json()
     except HTTPException as e:
@@ -526,10 +492,7 @@ def comment_attraction(
                 f"http://attractions:8003/attractions/comment", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
 
             return response.json()
     except HTTPException as e:
@@ -559,10 +522,7 @@ def delete_comment(
                 f"http://attractions:8003/attractions/comment", json=data
             )
 
-            if response.status_code != 204:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(204, response)
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -592,10 +552,8 @@ def update_comment(
                 f"http://attractions:8003/attractions/comment", json=data
             )
 
-            if response.status_code != 201:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(201, response)
+
             return response.json()
     except HTTPException as e:
         raise e

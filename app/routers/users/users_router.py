@@ -6,6 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.users_schemas.users import User, UserBase
 from app.services.autentication_service import check_authentication
+from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
 
@@ -30,10 +31,7 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             response_data = response.json()
 
@@ -71,10 +69,7 @@ def update_user_profile(
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             response_data = response.json()
 
@@ -109,10 +104,7 @@ def delete_user_profile(credentials: HTTPAuthorizationCredentials = Depends(secu
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             response_data = response.json()
 

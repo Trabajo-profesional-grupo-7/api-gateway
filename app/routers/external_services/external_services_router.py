@@ -8,6 +8,7 @@ from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
 from app.schemas.external_services_schemas.weather import Weather
 from app.services.autentication_service import check_authentication
+from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.constants import *
 
@@ -35,10 +36,7 @@ async def flight_information(
                 },
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             response_data = response.json()
 
@@ -78,10 +76,7 @@ def location_weather(
                 },
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             weather_data = response.json()
 
@@ -125,10 +120,7 @@ def currency_conversor(
                 },
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.json()["detail"]
-                )
+            handle_response_error(200, response)
 
             currency_data = response.json()
 
