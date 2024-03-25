@@ -491,3 +491,113 @@ def rate_attraction(
         raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
+
+
+###################
+#     COMMENT     #
+###################
+
+# ADD COMMENT
+
+
+@router.post(
+    "/attractions/comment",
+    status_code=201,
+    tags=["Comment Attraction"],
+    description="Comments an attraction for an user",
+)
+def comment_attraction(
+    attraction_id: str,
+    comment: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            current_user_id = get_user_id(credentials)
+
+            data = {
+                "user_id": current_user_id,
+                "attraction_id": attraction_id,
+                "comment": comment,
+            }
+
+            response = requests.post(
+                f"http://attractions:8003/attractions/comment", json=data
+            )
+
+            if response.status_code != 201:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# DELETE COMMENT
+
+
+@router.delete(
+    "/attractions/comment",
+    status_code=204,
+    tags=["Comment Attraction"],
+    description="Deletes a comment by comment_id",
+)
+def delete_comment(
+    comment_id: int, credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    try:
+        if check_authentication(credentials):
+
+            data = {"comment_id": comment_id}
+
+            response = requests.delete(
+                f"http://attractions:8003/attractions/comment", json=data
+            )
+
+            if response.status_code != 204:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# UPDATE COMMENT
+
+
+@router.put(
+    "/attractions/comment",
+    status_code=201,
+    tags=["Comment Attraction"],
+    description="Edits a comment by comment_id",
+)
+def update_comment(
+    comment_id: int,
+    new_comment: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            data = {"comment_id": comment_id, "new_comment": new_comment}
+
+            response = requests.put(
+                f"http://attractions:8003/attractions/comment", json=data
+            )
+
+            if response.status_code != 201:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
