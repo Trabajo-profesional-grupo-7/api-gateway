@@ -1,20 +1,19 @@
-from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
-from app.utils.constants import *
-from fastapi import APIRouter, Depends
-
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from app.services.autentication_service import check_authentication
-
-from app.schemas.users_schemas.users import User, UserBase
-
 from datetime import datetime
 
 import requests
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from app.schemas.users_schemas.users import User, UserBase
+from app.services.autentication_service import check_authentication
+from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
+from app.utils.constants import *
 
 router = APIRouter()
 security = HTTPBearer()
 
 # Get user
+
 
 @router.get(
     "/users",
@@ -28,11 +27,13 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
         if check_authentication(credentials):
             response = requests.get(
                 "http://users:8000/users",
-                headers={"Authorization": f"Bearer {credentials.credentials}"}
+                headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
             if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
 
             response_data = response.json()
 
@@ -48,7 +49,9 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
+
 # Update User
+
 
 @router.patch(
     "/users",
@@ -58,19 +61,20 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
     description="Update user profile",
 )
 def update_user_profile(
-    updatedUser: UserBase,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    updatedUser: UserBase, credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     try:
         if check_authentication(credentials):
             response = requests.patch(
                 "http://users:8000/users",
                 json=updatedUser.dict(),
-                headers={"Authorization": f"Bearer {credentials.credentials}"}
+                headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
             if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
 
             response_data = response.json()
 
@@ -86,7 +90,9 @@ def update_user_profile(
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
+
 # Delete user
+
 
 @router.delete(
     "/users",
@@ -95,18 +101,18 @@ def update_user_profile(
     response_model=User,
     description="Delete user profile",
 )
-def delete_user_profile(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+def delete_user_profile(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         if check_authentication(credentials):
             response = requests.delete(
                 "http://users:8000/users",
-                headers={"Authorization": f"Bearer {credentials.credentials}"}
+                headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
             if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.json()["detail"]
+                )
 
             response_data = response.json()
 

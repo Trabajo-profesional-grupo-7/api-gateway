@@ -2,8 +2,8 @@ from typing import Union
 
 from fastapi import HTTPException, status
 
-from app.utils.constants import *
 from app.utils.api_exception import *
+from app.utils.constants import *
 
 
 class APIException(Exception):

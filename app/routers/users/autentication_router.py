@@ -1,24 +1,22 @@
-from typing import Annotated
 import json
-
 from datetime import datetime
-
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from app.utils.api_exception import APIException, APIExceptionToHTTP
-
-from app.schemas.users_schemas.autentication import *
-from app.utils.api_exception import *
-from app.utils.constants import *
-
-from app.schemas.users_schemas.users import User, UserCreate, UserLogin, UserId
+from typing import Annotated
 
 import requests
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from app.schemas.users_schemas.autentication import *
+from app.schemas.users_schemas.users import User, UserCreate, UserId, UserLogin
+from app.utils.api_exception import *
+from app.utils.api_exception import APIException, APIExceptionToHTTP
+from app.utils.constants import *
 
 router = APIRouter()
 security = HTTPBearer()
 
 # Auth
+
 
 @router.get(
     "/users/verify_id_token",
@@ -26,23 +24,21 @@ security = HTTPBearer()
     status_code=200,
     description="Authenticate user by the jwt token",
 )
-def verify_id_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+def verify_id_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         response = requests.get(
             "http://users:8000/users/verify_id_token",
-            headers={"Authorization": f"Bearer {credentials.credentials}"}
+            headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.json()["detail"]
+            )
 
         authenticated_id = response.json()
 
-        return UserId.model_construct(
-            id=int(authenticated_id)
-        )
+        return UserId.model_construct(id=int(authenticated_id))
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -62,11 +58,13 @@ def refresh_token(
     try:
         response = requests.post(
             "http://users:8000/users/refresh_token",
-            headers={"Authorization": f"Bearer {credentials.credentials}"}
+            headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.json()["detail"]
+            )
         tokens = response.json()
 
         return Token.model_construct(
@@ -79,8 +77,9 @@ def refresh_token(
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
-    
+
 # Sign up
+
 
 @router.post(
     "/users/signup",
@@ -94,17 +93,16 @@ def create_user(user: UserCreate):
         user_data = {
             "username": user.username,
             "email": user.email,
-            "birth_date": user.birth_date.isoformat(), 
+            "birth_date": user.birth_date.isoformat(),
             "preferences": user.preferences,
             "password": user.password,
         }
 
-        response = requests.post(
-            "http://users:8000/users/signup",
-            json=user_data
-        )
+        response = requests.post("http://users:8000/users/signup", json=user_data)
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=response.json()["detail"])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.json()["detail"]
+            )
 
         response_data = response.json()
 
@@ -120,7 +118,9 @@ def create_user(user: UserCreate):
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
 
-# LogIn 
+
+# LogIn
+
 
 @router.post(
     "/users/login",
@@ -135,17 +135,14 @@ def login_user(user: UserLogin):
             "email": user.email,
             "password": user.password,
         }
-        
-        response = requests.post(
-            "http://users:8000/users/login",
-            json=user_data
-        )
+
+        response = requests.post("http://users:8000/users/login", json=user_data)
 
         if response.status_code == 400:
             raise APIException(code=LOGIN_ERROR, msg="LOGIN_ERROR")
-        
+
         tokens = response.json()
-    
+
         return Token.model_construct(
             token=tokens["token"],
             refresh_token=tokens["refresh_token"],
