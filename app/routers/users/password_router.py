@@ -2,16 +2,18 @@ from datetime import datetime
 from typing import Annotated
 
 import requests
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from app.schemas.users_schemas.password import (
     InitRecoverPassword,
     PasswordRecover,
     UpdatePassword,
+    UpdateRecoverPassword,
 )
 from app.services.autentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 router = APIRouter()
 security = HTTPBearer()
@@ -82,6 +84,30 @@ def init_recover_password(
             emited_datetime=recover["emited_datetime"].isoformat(),
             leftover_attempts=recover["leftover_attempts"],
         )
+
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# PIN RECOVER PASSWORD
+
+
+@router.put(
+    "/users/password/recover",
+    tags=["Password"],
+    status_code=200,
+    description="Receive the code and the new password and update it if the code match",
+)
+def recover_password(recover_data: UpdateRecoverPassword):
+    try:
+        response = requests.put(
+            "http://users:8000/users/password/recover",
+            json=recover_data.dict(),
+        )
+
+        handle_response_error(200, response)
 
     except HTTPException as e:
         raise e

@@ -16,3 +16,9 @@ class PasswordRecover(BaseModel):
 
 class InitRecoverPassword(BaseModel):
     email: EmailStr
+
+
+class UpdateRecoverPassword(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str = Field("password", min_length=8)
