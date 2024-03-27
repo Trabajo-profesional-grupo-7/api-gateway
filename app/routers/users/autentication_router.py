@@ -1,17 +1,15 @@
-import json
 from datetime import datetime
 from typing import Annotated
 
 import requests
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
 from app.schemas.users_schemas.autentication import *
 from app.schemas.users_schemas.users import User, UserCreate, UserId, UserLogin
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 from app.utils.constants import *
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 router = APIRouter()
 security = HTTPBearer()
