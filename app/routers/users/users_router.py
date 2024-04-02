@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import requests
@@ -9,6 +10,8 @@ from app.services.autentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
+
+AUTHENTICATION_URL = os.getenv("AUTHENTICATION_URL")
 
 router = APIRouter()
 security = HTTPBearer()
@@ -27,7 +30,7 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
     try:
         if check_authentication(credentials):
             response = requests.get(
-                "http://users:8000/users",
+                f"{AUTHENTICATION_URL}/users",
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 
@@ -64,7 +67,7 @@ def update_user_profile(
     try:
         if check_authentication(credentials):
             response = requests.patch(
-                "http://users:8000/users",
+                f"{AUTHENTICATION_URL}/users",
                 json=updatedUser.dict(),
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
@@ -100,7 +103,7 @@ def delete_user_profile(credentials: HTTPAuthorizationCredentials = Depends(secu
     try:
         if check_authentication(credentials):
             response = requests.delete(
-                "http://users:8000/users",
+                f"{AUTHENTICATION_URL}/users",
                 headers={"Authorization": f"Bearer {credentials.credentials}"},
             )
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+import os
 
 import requests
 from fastapi import APIRouter, Depends, Query
@@ -10,6 +10,8 @@ from app.services.autentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
+
+ATTRACTIONS_URL = os.getenv("ATTRACTIONS_URL")
 
 router = APIRouter()
 security = HTTPBearer()
@@ -34,7 +36,7 @@ def get_attraction(
     try:
         if check_authentication(credentials):
             response = requests.get(
-                f"http://attractions:8003/attractions/byid/{attraction_id}",
+                f"{ATTRACTIONS_URL}/attractions/byid/{attraction_id}",
             )
 
             handle_response_error(201, response)
@@ -71,7 +73,7 @@ def search_attraction_by_text(
             user_id = get_user_id(credentials)
             data = {"user_id": user_id, "query": attraction}
             response: Response = requests.post(
-                f"http://attractions:8003/attractions/search",
+                f"{ATTRACTIONS_URL}/attractions/search",
                 json=data,
             )
 
@@ -104,7 +106,7 @@ def get_nearby_attractions(
     try:
         if check_authentication(credentials):
             response: Response = requests.post(
-                f"http://attractions:8003/attractions/nearby/{latitude}/{longitude}/{radius}",
+                f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}",
             )
 
             handle_response_error(201, response)
@@ -142,9 +144,7 @@ def save_attraction(
                 "attraction_id": attraction_id,
             }
 
-            response = requests.post(
-                f"http://attractions:8003/attractions/save", json=data
-            )
+            response = requests.post(f"{ATTRACTIONS_URL}/attractions/save", json=data)
 
             handle_response_error(201, response)
 
@@ -179,7 +179,7 @@ def unsave_attraction(
             }
 
             response = requests.delete(
-                f"http://attractions:8003/attractions/unsave", json=data
+                f"{ATTRACTIONS_URL}/attractions/unsave", json=data
             )
 
             handle_response_error(204, response)
@@ -210,7 +210,7 @@ def get_saved_attractions_list(
             current_user_id = get_user_id(credentials)
 
             response = requests.get(
-                f"http://attractions:8003/attractions/save-list?user_id={current_user_id}&page={page}&size={size}",
+                f"{ATTRACTIONS_URL}/attractions/save-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
             handle_response_error(200, response)
@@ -245,9 +245,7 @@ def like_attraction(
 
             data = {"user_id": current_user_id, "attraction_id": attraction_id}
 
-            response = requests.post(
-                f"http://attractions:8003/attractions/like", json=data
-            )
+            response = requests.post(f"{ATTRACTIONS_URL}/attractions/like", json=data)
 
             handle_response_error(201, response)
 
@@ -278,7 +276,7 @@ def unlike_attraction(
             data = {"user_id": current_user_id, "attraction_id": attraction_id}
 
             response = requests.delete(
-                f"http://attractions:8003/attractions/unlike", json=data
+                f"{ATTRACTIONS_URL}/attractions/unlike", json=data
             )
 
             handle_response_error(204, response)
@@ -309,7 +307,7 @@ def get_liked_attractions_list(
             current_user_id = get_user_id(credentials)
 
             response = requests.get(
-                f"http://attractions:8003/attractions/like-list?user_id={current_user_id}&page={page}&size={size}",
+                f"{ATTRACTIONS_URL}/attractions/like-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
             handle_response_error(200, response)
@@ -344,9 +342,7 @@ def mark_as_done_attraction(
 
             data = {"user_id": current_user_id, "attraction_id": attraction_id}
 
-            response = requests.post(
-                f"http://attractions:8003/attractions/done", json=data
-            )
+            response = requests.post(f"{ATTRACTIONS_URL}/attractions/done", json=data)
 
             handle_response_error(201, response)
 
@@ -377,7 +373,7 @@ def mark_as_undone_attraction(
             data = {"user_id": current_user_id, "attraction_id": attraction_id}
 
             response = requests.delete(
-                f"http://attractions:8003/attractions/undone", json=data
+                f"{ATTRACTIONS_URL}/attractions/undone", json=data
             )
 
             handle_response_error(204, response)
@@ -407,7 +403,7 @@ def get_done_attractions_list(
             current_user_id = get_user_id(credentials)
 
             response = requests.get(
-                f"http://attractions:8003/attractions/done-list?user_id={current_user_id}&page={page}&size={size}",
+                f"{ATTRACTIONS_URL}/attractions/done-list?user_id={current_user_id}&page={page}&size={size}",
             )
 
             handle_response_error(200, response)
@@ -446,9 +442,7 @@ def rate_attraction(
                 "rating": rating,
             }
 
-            response = requests.post(
-                f"http://attractions:8003/attractions/rate", json=data
-            )
+            response = requests.post(f"{ATTRACTIONS_URL}/attractions/rate", json=data)
 
             handle_response_error(201, response)
 
@@ -489,7 +483,7 @@ def comment_attraction(
             }
 
             response = requests.post(
-                f"http://attractions:8003/attractions/comment", json=data
+                f"{ATTRACTIONS_URL}/attractions/comment", json=data
             )
 
             handle_response_error(201, response)
@@ -519,7 +513,7 @@ def delete_comment(
             data = {"comment_id": comment_id}
 
             response = requests.delete(
-                f"http://attractions:8003/attractions/comment", json=data
+                f"{ATTRACTIONS_URL}/attractions/comment", json=data
             )
 
             handle_response_error(204, response)
@@ -548,9 +542,7 @@ def update_comment(
 
             data = {"comment_id": comment_id, "new_comment": new_comment}
 
-            response = requests.put(
-                f"http://attractions:8003/attractions/comment", json=data
-            )
+            response = requests.put(f"{ATTRACTIONS_URL}/attractions/comment", json=data)
 
             handle_response_error(201, response)
 

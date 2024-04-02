@@ -1,4 +1,4 @@
-from datetime import datetime
+import os
 from typing import Annotated
 
 import requests
@@ -15,9 +15,10 @@ from app.services.autentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 
+AUTHENTICATION_URL = os.getenv("AUTHENTICATION_URL")
+
 router = APIRouter()
 security = HTTPBearer()
-
 
 # UPDATE PASSWORD
 
@@ -36,7 +37,7 @@ def update_password(
         if check_authentication(credentials):
 
             response = requests.patch(
-                "http://users:8000/users/password/update",
+                f"{AUTHENTICATION_URL}/password/update",
                 json=update_data.dict(),
                 headers={
                     "Authorization": f"{credentials.scheme} {credentials.credentials}"
@@ -71,7 +72,7 @@ def init_recover_password(
     try:
 
         response = requests.post(
-            "http://users:8000/users/password/recover",
+            f"{AUTHENTICATION_URL}/password/recover",
             json=recover_data.dict(),
         )
 
@@ -103,7 +104,7 @@ def init_recover_password(
 def recover_password(recover_data: UpdateRecoverPassword):
     try:
         response = requests.put(
-            "http://users:8000/users/password/recover",
+            f"{AUTHENTICATION_URL}/password/recover",
             json=recover_data.dict(),
         )
 

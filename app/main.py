@@ -6,7 +6,7 @@ from app.routers.attractions.attractions_router import router as attraction_rout
 from app.routers.external_services.external_services_router import (
     router as external_services_router,
 )
-from app.routers.users.autentication_router import router as autentication_router
+from app.routers.users.authentication_router import router as authentication_router
 from app.routers.users.password_router import router as password_router
 from app.routers.users.users_router import router as users_router
 
@@ -21,7 +21,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-app.include_router(autentication_router)
+app.include_router(authentication_router)
 app.include_router(users_router)
 app.include_router(password_router)
 app.include_router(attraction_router)

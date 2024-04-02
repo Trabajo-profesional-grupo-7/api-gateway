@@ -1,7 +1,8 @@
+import os
 from datetime import date
 
 import requests
-from fastapi import APIRouter, Depends, FastAPI, status
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.external_services_schemas.currency import Currency
@@ -11,6 +12,8 @@ from app.services.autentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.constants import *
+
+EXTERNAL_SERVICES_URL = os.getenv("EXTERNAL_SERVICES_URL")
 
 router = APIRouter()
 security = HTTPBearer()
@@ -28,7 +31,7 @@ async def flight_information(
     try:
         if check_authentication(credentials):
             response = requests.get(
-                f"http://external-services:8002/flights/status",
+                f"{EXTERNAL_SERVICES_URL}/flights/status",
                 params={
                     "carrier_code": carrier_code,
                     "flight_number": flight_number,
@@ -70,7 +73,7 @@ def location_weather(
     try:
         if check_authentication(credentials):
             response = requests.get(
-                f"http://external-services:8002/weather",
+                f"{EXTERNAL_SERVICES_URL}/weather",
                 params={
                     "location": location,
                 },
@@ -112,7 +115,7 @@ def currency_conversor(
     try:
         if check_authentication(credentials):
             response = requests.get(
-                f"http://external-services:8002/currency",
+                f"{EXTERNAL_SERVICES_URL}/currency",
                 params={
                     "currency": currency,
                     "interest_currency": interest_currency,

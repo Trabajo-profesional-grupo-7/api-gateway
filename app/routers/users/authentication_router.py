@@ -1,15 +1,19 @@
+import os
 from datetime import datetime
 from typing import Annotated
 
 import requests
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from app.schemas.users_schemas.autentication import *
 from app.schemas.users_schemas.users import User, UserCreate, UserId, UserLogin
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 from app.utils.constants import *
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+AUTHENTICATION_URL = os.getenv("AUTHENTICATION_URL")
 
 router = APIRouter()
 security = HTTPBearer()
@@ -26,7 +30,7 @@ security = HTTPBearer()
 def verify_id_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         response = requests.get(
-            "http://users:8000/users/verify_id_token",
+            f"{AUTHENTICATION_URL}/users/verify_id_token",
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
@@ -53,7 +57,7 @@ def refresh_token(
 ):
     try:
         response = requests.post(
-            "http://users:8000/users/refresh_token",
+            f"{AUTHENTICATION_URL}/users/refresh_token",
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
@@ -92,7 +96,7 @@ def create_user(user: UserCreate):
             "password": user.password,
         }
 
-        response = requests.post("http://users:8000/users/signup", json=user_data)
+        response = requests.post(f"{AUTHENTICATION_URL}/users/signup", json=user_data)
 
         handle_response_error(201, response)
 
@@ -128,7 +132,7 @@ def login_user(user: UserLogin):
             "password": user.password,
         }
 
-        response = requests.post("http://users:8000/users/login", json=user_data)
+        response = requests.post(f"{AUTHENTICATION_URL}/users/login", json=user_data)
 
         handle_response_error(200, response)
 

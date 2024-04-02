@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   api-gateway:
@@ -10,4 +10,7 @@ services:
     restart: always
     ports:
       - ${PORT}:8001
-
+    environment:
+      - ATTRACTIONS_URL=${ATTRACTIONS_URL}
+      - EXTERNAL_SERVICES_URL=${EXTERNAL_SERVICES_URL}
+      - AUTHENTICATION_URL=${AUTHENTICATION_URL}
