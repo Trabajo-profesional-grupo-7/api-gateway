@@ -8,7 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
 from app.schemas.external_services_schemas.weather import Weather
-from app.services.autentication_service import check_authentication
+from app.services.authentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.constants import *

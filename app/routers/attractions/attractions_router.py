@@ -6,7 +6,7 @@ from fastapi.responses import Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.attractions_schemas.attractions import AttractionByID
-from app.services.autentication_service import check_authentication, get_user_id
+from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *

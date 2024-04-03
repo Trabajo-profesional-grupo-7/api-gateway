@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.users_schemas.users import User, UserBase
-from app.services.autentication_service import check_authentication
+from app.services.authentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *

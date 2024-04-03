@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import requests
@@ -6,13 +7,15 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.utils.api_exception import APIException
 from app.utils.constants import *
 
+AUTHENTICATION_URL = os.getenv("AUTHENTICATION_URL")
+
 security = HTTPBearer()
 
 
 def check_authentication(credentials: HTTPAuthorizationCredentials) -> Optional[bool]:
     try:
         response = requests.get(
-            "http://users:8000/users/verify_id_token",
+            f"{AUTHENTICATION_URL}/users/verify_id_token",
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
@@ -22,7 +25,7 @@ def check_authentication(credentials: HTTPAuthorizationCredentials) -> Optional[
             raise APIException(
                 code=INVALID_CREDENTIALS_ERROR, msg="INVALID_CREDENTIALS_ERROR"
             )
-    except requests.RequestException as e:
+    except requests.RequestException:
         raise APIException(
             code=CONNECTION_ERROR,
             msg="Error de conexión con el servidor de autenticación",
@@ -32,7 +35,7 @@ def check_authentication(credentials: HTTPAuthorizationCredentials) -> Optional[
 def get_user_id(credentials: HTTPAuthorizationCredentials) -> int:
     try:
         response = requests.get(
-            "http://users:8000/users/verify_id_token",
+            f"{AUTHENTICATION_URL}/users/verify_id_token",
             headers={"Authorization": f"Bearer {credentials.credentials}"},
         )
 
@@ -42,7 +45,7 @@ def get_user_id(credentials: HTTPAuthorizationCredentials) -> int:
             raise APIException(
                 code=INVALID_CREDENTIALS_ERROR, msg="INVALID_CREDENTIALS_ERROR"
             )
-    except requests.RequestException as e:
+    except requests.RequestException:
         raise APIException(
             code=CONNECTION_ERROR,
             msg="Error de conexión con el servidor de autenticación",

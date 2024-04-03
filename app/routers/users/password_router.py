@@ -11,7 +11,7 @@ from app.schemas.users_schemas.password import (
     UpdatePassword,
     UpdateRecoverPassword,
 )
-from app.services.autentication_service import check_authentication
+from app.services.authentication_service import check_authentication
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 
