@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -18,3 +20,8 @@ class AttractionByText(BaseModel):
     saved_count: int
     done_count: int
     avg_rating: float
+
+
+class ScheduleAttraction(BaseModel):
+    attraction_id: str
+    scheduled_time: datetime

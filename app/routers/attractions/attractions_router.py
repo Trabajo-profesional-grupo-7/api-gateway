@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.schemas.attractions_schemas.attractions import AttractionByID
+from app.schemas.attractions_schemas.attractions import (
+    AttractionByID,
+    AttractionByText,
+    ScheduleAttraction,
+)
 from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
@@ -545,6 +549,112 @@ def update_comment(
             response = requests.put(f"{ATTRACTIONS_URL}/attractions/comment", json=data)
 
             handle_response_error(201, response)
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+###################
+#     SCHEDULE    #
+###################
+
+# SCHEDULED
+
+
+@router.post(
+    "/attractions/scheduled",
+    status_code=201,
+    tags=["Schedule Attraction"],
+    description="Schedules an attraction for a user at a certain timestamp",
+)
+def schedule_attraction(
+    data: ScheduleAttraction,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            attraction_scheduled = data.dict()
+            attraction_scheduled["user_id"] = get_user_id(credentials)
+
+            attraction_scheduled["scheduled_time"] = attraction_scheduled[
+                "scheduled_time"
+            ].isoformat()
+
+            response = requests.post(
+                f"{ATTRACTIONS_URL}/attractions/scheduled",
+                json=attraction_scheduled,
+            )
+
+            handle_response_error(201, response)
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# UNSCHEDULED
+
+
+@router.delete(
+    "/attractions/unschedule",
+    status_code=204,
+    tags=["Schedule Attraction"],
+    description="Unschedules an attraction for a user",
+)
+def unschedule_attraction(
+    attraction_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            user_id = get_user_id(credentials)
+            unscheduled_attraction = {
+                "user_id": user_id,
+                "attraction_id": attraction_id,
+            }
+
+            response = requests.delete(
+                f"{ATTRACTIONS_URL}/attractions/unschedule",
+                json=unscheduled_attraction,
+            )
+
+            handle_response_error(204, response)
+
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# SCHEDULED LIST
+@router.get(
+    "/attractions/scheduled-list",
+    status_code=200,
+    tags=["Schedule Attraction"],
+    description="Returns a list of the attractions scheduled by an user",
+)
+def get_scheduled_attractions_list(
+    page: int = Query(0, description="Page number", ge=0),
+    size: int = Query(10, description="Number of items per page", ge=1, le=100),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            user_id = get_user_id(credentials)
+
+            response = requests.get(
+                f"{ATTRACTIONS_URL}/attractions/scheduled-list",
+                params={"user_id": user_id, "page": page, "size": size},
+            )
+
+            handle_response_error(200, response)
 
             return response.json()
     except HTTPException as e:
