@@ -21,7 +21,7 @@ router = APIRouter()
 security = HTTPBearer()
 
 ###################
-#       GET       #
+#     SEARCH      #
 ###################
 
 # Get attraction by id
@@ -30,7 +30,7 @@ security = HTTPBearer()
 @router.get(
     "/attractions/byid/{attraction_id}",
     status_code=200,
-    tags=["Attractions"],
+    tags=["Search Attractions"],
     description="Gets an attraction given its ID",
     response_model=AttractionByID,
 )
@@ -66,7 +66,7 @@ def get_attraction(
 @router.post(
     "/attractions/search",
     status_code=201,
-    tags=["Attractions"],
+    tags=["Search Attractions"],
     description="Searches attractions given a text query",
 )
 def search_attraction_by_text(
@@ -98,7 +98,7 @@ def search_attraction_by_text(
 @router.post(
     "/attractions/nearby/{latitude}/{longitude}/{radius}",
     status_code=201,
-    tags=["Attractions"],
+    tags=["Search Attractions"],
     description="Gets nearby attractions given a latitude and longitude",
 )
 def get_nearby_attractions(
@@ -117,6 +117,36 @@ def get_nearby_attractions(
 
             attractions_info = response.json()
             return attractions_info
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# Search by recommendation
+
+
+@router.get(
+    "/attractions/recommendations/{attraction_id}",
+    status_code=201,
+    tags=["Search Attractions"],
+    description="Gets similar attractions given an attraction ID",
+)
+def get_attraction_recommendations(
+    attraction_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    page: int = Query(0, description="Page number", ge=0),
+    size: int = Query(10, description="Number of items per page", ge=1, le=100),
+):
+    try:
+        if check_authentication(credentials):
+            response: Response = requests.get(
+                f"{ATTRACTIONS_URL}/attractions/recommendations/{attraction_id}?page={page}&size={size}",
+            )
+
+            handle_response_error(201, response)
+
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -555,6 +585,7 @@ def update_comment(
         raise e
     except APIException as e:
         raise APIExceptionToHTTP().convert(e)
+
 
 ###################
 #     SCHEDULE    #
