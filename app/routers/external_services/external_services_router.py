@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 
 import requests
 from fastapi import APIRouter, Depends
@@ -7,8 +7,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
-from app.schemas.external_services_schemas.weather import Weather
+from app.schemas.external_services_schemas.weather import (
+    DayWeather,
+    FiveDayWeather,
+    Weather,
+)
 from app.services.authentication_service import check_authentication
+from app.services.external_services.weather_services import parse_weather_days
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.constants import *
@@ -65,7 +70,7 @@ async def flight_information(
     tags=["Weather"],
     status_code=200,
     description="Location weather",
-    response_model=Weather,
+    response_model=FiveDayWeather,
 )
 def location_weather(
     location: str, credentials: HTTPAuthorizationCredentials = Depends(security)
@@ -83,13 +88,8 @@ def location_weather(
 
             weather_data = response.json()
 
-            return Weather.model_construct(
-                humidity=weather_data["humidity"],
-                precipitation_probability=weather_data["precipitation_probability"],
-                temperature=weather_data["temperature"],
-                uv_index=weather_data["uv_index"],
-                visibility=weather_data["visibility"],
-            )
+            return parse_weather_days(weather_data)
+
     except HTTPException as e:
         raise e
     except APIException as e:
