@@ -1,4 +1,5 @@
 import os
+from typing import List, Optional
 
 import requests
 from fastapi import APIRouter, Depends, Query
@@ -8,7 +9,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.schemas.attractions_schemas.attractions import (
     AttractionByID,
     AttractionByText,
+    AutocompleteAttractions,
     ScheduleAttraction,
+    SearchAttractionByText,
 )
 from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
@@ -19,6 +22,30 @@ ATTRACTIONS_URL = os.getenv("ATTRACTIONS_URL")
 
 router = APIRouter()
 security = HTTPBearer()
+
+###################
+#    METADATA     #
+###################
+
+
+@router.get(
+    "/metadata",
+    status_code=200,
+    tags=["Metadata"],
+    description="Gets tha application metadata",
+)
+def get_metadata():
+    try:
+        response = requests.get(f"{ATTRACTIONS_URL}/metadata")
+
+        handle_response_error(201, response)
+
+        return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
 
 ###################
 #     SEARCH      #
@@ -32,28 +59,26 @@ security = HTTPBearer()
     status_code=200,
     tags=["Search Attractions"],
     description="Gets an attraction given its ID",
-    response_model=AttractionByID,
 )
 def get_attraction(
-    attraction_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+    attraction_id: str,
+    user_id: Optional[int] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
+            params = {}
+
+            if user_id and user_id == get_user_id(credentials):
+                params["user_id"] = user_id
+
             response = requests.get(
-                f"{ATTRACTIONS_URL}/attractions/byid/{attraction_id}",
+                f"{ATTRACTIONS_URL}/attractions/byid/{attraction_id}", params=params
             )
 
             handle_response_error(201, response)
 
-            attraction_info = response.json()
-            return AttractionByID.model_construct(
-                id=attraction_info["id"],
-                displayName=attraction_info["displayName"],
-                likes_count=attraction_info["likes_count"],
-                saved_count=attraction_info["saved_count"],
-                done_count=attraction_info["done_count"],
-                avg_rating=attraction_info["avg_rating"],
-            )
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -70,15 +95,25 @@ def get_attraction(
     description="Searches attractions given a text query",
 )
 def search_attraction_by_text(
-    attraction: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+    attraction: SearchAttractionByText,
+    type: Optional[str] = None,
+    user_id: Optional[int] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
-            user_id = get_user_id(credentials)
-            data = {"user_id": user_id, "query": attraction}
+
+            params = {}
+            if user_id and user_id == get_user_id(credentials):
+                params["user_id"] = user_id
+            if type:
+                params["type"] = type
+
+            data = {"query": attraction.attraction_name}
             response: Response = requests.post(
                 f"{ATTRACTIONS_URL}/attractions/search",
                 json=data,
+                params=params,
             )
 
             handle_response_error(201, response)
@@ -105,18 +140,25 @@ def get_nearby_attractions(
     latitude: float,
     longitude: float,
     radius: float,
+    user_id: Optional[int] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
+
+            params = {}
+
+            if user_id and user_id == get_user_id(credentials):
+                params["user_id"] = user_id
+
             response: Response = requests.post(
                 f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}",
+                params=params,
             )
 
             handle_response_error(201, response)
 
-            attractions_info = response.json()
-            return attractions_info
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -147,6 +189,75 @@ def get_attraction_recommendations(
             handle_response_error(201, response)
 
             return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+###################
+#  AUTOCOMPLETE   #
+###################
+
+
+@router.post(
+    "/attractions/autocomplete",
+    status_code=201,
+    tags=["Search Attractions"],
+    description="Returns attractions predictions given a substring. Can filter by a list of attraction types.",
+)
+def autocomplete_attractions(
+    data: AutocompleteAttractions,
+    attraction_types: List[str] = Query(
+        None,
+        title="Attraction Types",
+        description="Filter by attraction types",
+    ),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            params = {"query": data.attraction_name}
+
+            if attraction_types:
+                params["attraction_types"] = ",".join(attraction_types)
+
+            response: Response = requests.post(
+                f"{ATTRACTIONS_URL}/attractions/autocomplete",
+                json=params,
+            )
+
+            handle_response_error(201, response)
+
+            return response.json()
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+###################
+#    RUN SYSTEM   #
+###################
+
+
+@router.post(
+    "/attractions/run-recommendation-system",
+    status_code=201,
+    tags=["Search Attractions"],
+    description="Runs the recommendation system",
+)
+def run_recommendation_system(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+
+            response: Response = requests.post(
+                f"{ATTRACTIONS_URL}/attractions/run-recommendation-system",
+            )
+
     except HTTPException as e:
         raise e
     except APIException as e:

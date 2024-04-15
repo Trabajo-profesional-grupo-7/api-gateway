@@ -1,5 +1,6 @@
 import os
 from datetime import date, datetime
+from typing import Optional
 
 import requests
 from fastapi import APIRouter, Depends
@@ -73,15 +74,16 @@ async def flight_information(
     response_model=FiveDayWeather,
 )
 def location_weather(
-    location: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+    city: str,
+    province: Optional[str] = None,
+    country: Optional[str] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
             response = requests.get(
                 f"{EXTERNAL_SERVICES_URL}/weather",
-                params={
-                    "location": location,
-                },
+                params={"city": city, "province": province, "country": country},
             )
 
             handle_response_error(200, response)

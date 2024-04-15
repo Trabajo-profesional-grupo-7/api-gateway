@@ -25,3 +25,11 @@ class AttractionByText(BaseModel):
 class ScheduleAttraction(BaseModel):
     attraction_id: str
     scheduled_time: datetime
+
+
+class SearchAttractionByText(BaseModel):
+    attraction_name: str
+
+
+class AutocompleteAttractions(BaseModel):
+    attraction_name: str
