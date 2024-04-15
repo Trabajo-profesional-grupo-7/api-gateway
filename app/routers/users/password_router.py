@@ -37,7 +37,7 @@ def update_password(
         if check_authentication(credentials):
 
             response = requests.patch(
-                f"{AUTHENTICATION_URL}/password/update",
+                f"{AUTHENTICATION_URL}/users/password/update",
                 json=update_data.dict(),
                 headers={
                     "Authorization": f"{credentials.scheme} {credentials.credentials}"
@@ -72,7 +72,7 @@ def init_recover_password(
     try:
 
         response = requests.post(
-            f"{AUTHENTICATION_URL}/password/recover",
+            f"{AUTHENTICATION_URL}/users/password/recover",
             json=recover_data.dict(),
         )
 
@@ -104,7 +104,7 @@ def init_recover_password(
 def recover_password(recover_data: UpdateRecoverPassword):
     try:
         response = requests.put(
-            f"{AUTHENTICATION_URL}/password/recover",
+            f"{AUTHENTICATION_URL}/users/password/recover",
             json=recover_data.dict(),
         )
 
