@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
 
@@ -33,3 +34,32 @@ class SearchAttractionByText(BaseModel):
 
 class AutocompleteAttractions(BaseModel):
     attraction_name: str
+
+
+class Comment(BaseModel):
+    comment_id: int
+    user_id: int
+    comment: str
+
+
+class AttractionByUser(BaseModel):
+    attraction_id: str
+    attraction_name: str
+    city: str = None
+    country: str = None
+    photo: str = None
+    comments: List[Comment] = []
+    avg_rating: float = None
+    liked_count: int = 0
+    is_liked: bool = False
+    is_saved: bool = False
+    user_rating: int = None
+    is_done: bool = False
+
+
+class Attraction(BaseModel):
+    attraction_id: str
+    attraction_name: str
+    city: str = None
+    country: str = None
+    photo: str = None

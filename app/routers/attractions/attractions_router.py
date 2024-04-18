@@ -13,6 +13,7 @@ from app.schemas.attractions_schemas.attractions import (
     ScheduleAttraction,
     SearchAttractionByText,
 )
+from app.services.attractions import parse_attraction_by_id, parse_attraction_list_info
 from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
@@ -78,7 +79,7 @@ def get_attraction(
 
             handle_response_error(201, response)
 
-            return response.json()
+            return parse_attraction_by_id(response.json())
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -97,15 +98,12 @@ def get_attraction(
 def search_attraction_by_text(
     attraction: SearchAttractionByText,
     type: Optional[str] = None,
-    user_id: Optional[int] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
 
             params = {}
-            if user_id and user_id == get_user_id(credentials):
-                params["user_id"] = user_id
             if type:
                 params["type"] = type
 
@@ -118,8 +116,7 @@ def search_attraction_by_text(
 
             handle_response_error(201, response)
 
-            attraction_info = response.json()
-            return attraction_info
+            return parse_attraction_list_info(response.json())
 
     except HTTPException as e:
         raise e
@@ -140,25 +137,18 @@ def get_nearby_attractions(
     latitude: float,
     longitude: float,
     radius: float,
-    user_id: Optional[int] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
 
-            params = {}
-
-            if user_id and user_id == get_user_id(credentials):
-                params["user_id"] = user_id
-
             response: Response = requests.post(
                 f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}",
-                params=params,
             )
 
             handle_response_error(201, response)
 
-            return response.json()
+            return parse_attraction_list_info(response.json())
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -169,21 +159,21 @@ def get_nearby_attractions(
 
 
 @router.get(
-    "/attractions/recommendations/{attraction_id}",
+    "/attractions/recommendations",
     status_code=201,
     tags=["Search Attractions"],
     description="Gets similar attractions given an attraction ID",
 )
 def get_attraction_recommendations(
-    attraction_id: str,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     page: int = Query(0, description="Page number", ge=0),
     size: int = Query(10, description="Number of items per page", ge=1, le=100),
 ):
     try:
         if check_authentication(credentials):
+            user_id = get_user_id(credentials)
             response: Response = requests.get(
-                f"{ATTRACTIONS_URL}/attractions/recommendations/{attraction_id}?page={page}&size={size}",
+                f"{ATTRACTIONS_URL}/attractions/recommendations/{user_id}?page={page}&size={size}",
             )
 
             handle_response_error(201, response)

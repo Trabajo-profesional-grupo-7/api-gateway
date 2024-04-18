@@ -19,7 +19,7 @@ def parse_weather_days(weather_data: dict):
             precipitation_probability=int(
                 weather_info.get("precipitation_probability", 0)
             ),
-            temperature=weather_info.get("temperatureAvg", 0),
+            temperature=weather_info.get("temperature", 0),
             uv_index=weather_info.get("uv_index", 0),
             visibility=weather_info.get("visibility", 0),
         )
