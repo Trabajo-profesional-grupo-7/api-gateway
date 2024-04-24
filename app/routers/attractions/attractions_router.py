@@ -63,15 +63,13 @@ def get_metadata():
 )
 def get_attraction(
     attraction_id: str,
-    user_id: Optional[int] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
             params = {}
 
-            if user_id and user_id == get_user_id(credentials):
-                params["user_id"] = user_id
+            params["user_id"] = get_user_id(credentials)
 
             response = requests.get(
                 f"{ATTRACTIONS_URL}/attractions/byid/{attraction_id}", params=params
