@@ -6,6 +6,11 @@ import requests
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.schemas.external_services_schemas.chatbot import (
+    AssistantResponse,
+    ChatMessage,
+    Conversation,
+)
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
 from app.schemas.external_services_schemas.weather import (
@@ -13,7 +18,7 @@ from app.schemas.external_services_schemas.weather import (
     FiveDayWeather,
     Weather,
 )
-from app.services.authentication_service import check_authentication
+from app.services.authentication_service import check_authentication, get_user_id
 from app.services.external_services.weather_services import parse_weather_days
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
@@ -134,6 +139,72 @@ def currency_conversor(
                 target_code=currency_data["target_code"],
                 conversion=currency_data["conversion"],
             )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# Chatbot
+
+
+@router.post(
+    "/chatbot/init",
+    tags=["Chatbot"],
+    status_code=201,
+    description="Start conversation",
+)
+async def init_conversation(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+            response = requests.post(
+                f"{EXTERNAL_SERVICES_URL}/chatbot/init",
+                headers={"Authorization": f"Bearer {credentials.credentials}"},
+                params={
+                    "user_id": user_id,
+                },
+            )
+
+            handle_response_error(201, response)
+
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+@router.post(
+    "/chatbot/send_message",
+    tags=["Chatbot"],
+    status_code=201,
+    description="Send message to the assistant",
+    response_model=AssistantResponse,
+)
+async def send_message(
+    message: ChatMessage,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+
+            response = requests.post(
+                f"{EXTERNAL_SERVICES_URL}/chatbot/send_message/{user_id}",
+                json={"message": message.text},
+            )
+
+            handle_response_error(201, response)
+
+            assistant_response = dict(response.json())
+
+            return AssistantResponse.model_construct(
+                role=assistant_response["role"],
+                message=assistant_response["message"],
+            )
+
     except HTTPException as e:
         raise e
     except APIException as e:
