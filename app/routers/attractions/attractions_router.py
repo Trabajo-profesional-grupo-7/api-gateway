@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from typing import List, Optional
 
 import requests
@@ -135,14 +136,25 @@ def get_nearby_attractions(
     latitude: float,
     longitude: float,
     radius: float,
+    attraction_types: List[str] = Query(
+        None,
+        title="Attraction Types",
+        description="Filter by attraction types",
+    ),
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
 
-            response: Response = requests.post(
-                f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}",
+            url = (
+                f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}"
             )
+
+            if attraction_types:
+                types = urllib.parse.quote(",".join(attraction_types))
+                url += f"?attraction_types={types}"
+
+            response = requests.post(url)
 
             handle_response_error(201, response)
 
