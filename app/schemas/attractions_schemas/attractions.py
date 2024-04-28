@@ -4,6 +4,11 @@ from typing import List
 from pydantic import BaseModel
 
 
+class Location(BaseModel):
+    latitude: float
+    longitude: float
+
+
 class AttractionByID(BaseModel):
     id: str
     displayName: dict
@@ -11,16 +16,18 @@ class AttractionByID(BaseModel):
     saved_count: int
     done_count: int
     avg_rating: float
+    location: Location
 
 
 class AttractionByText(BaseModel):
     id: str
     adrFormatAddress: str
     displayName: dict
-    likes_count: int
+    location: Location
     saved_count: int
     done_count: int
     avg_rating: float
+    liked_count: int
 
 
 class ScheduleAttraction(BaseModel):
@@ -45,6 +52,7 @@ class Comment(BaseModel):
 class AttractionByUser(BaseModel):
     attraction_id: str
     attraction_name: str
+    location: Location
     city: str = None
     country: str = None
     photo: str = None
@@ -62,4 +70,7 @@ class Attraction(BaseModel):
     attraction_name: str
     city: str = None
     country: str = None
+    location: Location
     photo: str = None
+    avg_rating: float
+    liked_count: int

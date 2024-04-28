@@ -8,16 +8,15 @@ from fastapi.responses import Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.attractions_schemas.attractions import (
-    AttractionByID,
-    AttractionByText,
-    AutocompleteAttractions,
-    ScheduleAttraction,
-    SearchAttractionByText,
-)
-from app.services.attractions import parse_attraction_by_id, parse_attraction_list_info
-from app.services.authentication_service import check_authentication, get_user_id
+    AttractionByID, AttractionByText, AutocompleteAttractions,
+    ScheduleAttraction, SearchAttractionByText)
+from app.services.attractions import (parse_attraction_by_id,
+                                      parse_attraction_list_info)
+from app.services.authentication_service import (check_authentication,
+                                                 get_user_id)
 from app.services.handle_error_service import handle_response_error
-from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
+from app.utils.api_exception import (APIException, APIExceptionToHTTP,
+                                     HTTPException)
 from app.utils.constants import *
 
 ATTRACTIONS_URL = os.getenv("ATTRACTIONS_URL")
@@ -76,7 +75,7 @@ def get_attraction(
                 f"{ATTRACTIONS_URL}/attractions/byid/{attraction_id}", params=params
             )
 
-            handle_response_error(201, response)
+            handle_response_error(200, response)
 
             return parse_attraction_by_id(response.json())
     except HTTPException as e:
@@ -97,6 +96,8 @@ def get_attraction(
 def search_attraction_by_text(
     attraction: SearchAttractionByText,
     type: Optional[str] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
@@ -105,6 +106,10 @@ def search_attraction_by_text(
             params = {}
             if type:
                 params["type"] = type
+
+            if longitude and latitude:
+                params["longitude"] = longitude
+                params["latitude"] = latitude
 
             data = {"query": attraction.attraction_name}
             response: Response = requests.post(
@@ -186,9 +191,8 @@ def get_attraction_recommendations(
                 f"{ATTRACTIONS_URL}/attractions/recommendations/{user_id}?page={page}&size={size}",
             )
 
-            handle_response_error(201, response)
-
-            return response.json()
+            handle_response_error(200, response)
+            return parse_attraction_list_info(response.json())
     except HTTPException as e:
         raise e
     except APIException as e:

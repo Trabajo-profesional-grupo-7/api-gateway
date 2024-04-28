@@ -1,10 +1,18 @@
-from app.schemas.attractions_schemas.attractions import Attraction, AttractionByUser
+from app.schemas.attractions_schemas.attractions import (
+    Attraction,
+    AttractionByUser,
+    Location,
+)
 
 
 def parse_attraction_by_id(data: dict):
     return AttractionByUser.model_construct(
         attraction_id=data["attraction_id"],
         attraction_name=data["attraction_name"],
+        location=Location.model_construct(
+            latitude=data["location"]["latitude"],
+            longitude=data["location"]["longitude"],
+        ),
         city=data["city"],
         country=data["country"],
         photo=data["photo"],
@@ -23,8 +31,14 @@ def parse_attraction_info(data: dict):
         attraction_id=data["attraction_id"],
         attraction_name=data["attraction_name"],
         city=data["city"],
+        location=Location.model_construct(
+            latitude=data["location"]["latitude"],
+            longitude=data["location"]["longitude"],
+        ),
         country=data["country"],
         photo=data["photo"],
+        avg_rating=data["avg_rating"],
+        liked_count=data["liked_count"],
     )
 
 
