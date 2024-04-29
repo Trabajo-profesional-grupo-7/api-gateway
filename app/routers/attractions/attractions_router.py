@@ -39,7 +39,7 @@ def get_metadata():
     try:
         response = requests.get(f"{ATTRACTIONS_URL}/metadata")
 
-        handle_response_error(201, response)
+        handle_response_error(200, response)
 
         return response.json()
     except HTTPException as e:
