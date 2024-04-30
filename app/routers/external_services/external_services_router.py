@@ -11,6 +11,7 @@ from app.schemas.external_services_schemas.chatbot import (
     ChatMessage,
     Conversation,
 )
+from app.schemas.external_services_schemas.cities import Cities
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
 from app.schemas.external_services_schemas.weather import (
@@ -19,6 +20,7 @@ from app.schemas.external_services_schemas.weather import (
     Weather,
 )
 from app.services.authentication_service import check_authentication, get_user_id
+from app.services.external_services.cities_services import parse_cities
 from app.services.external_services.weather_services import parse_weather_days
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
@@ -205,6 +207,39 @@ async def send_message(
                 message=assistant_response["message"],
             )
 
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+###########
+#  Cities #
+###########
+@router.get(
+    "/cities",
+    tags=["Cities"],
+    status_code=200,
+    description="Get cities names",
+    response_model=Cities,
+)
+async def get_cities_name(
+    keyword: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+
+            response = requests.get(
+                f"{EXTERNAL_SERVICES_URL}/cities", params={"keyword": keyword}
+            )
+
+            handle_response_error(200, response)
+
+            cities = response.json()
+
+            return parse_cities(cities["cities"])
     except HTTPException as e:
         raise e
     except APIException as e:
