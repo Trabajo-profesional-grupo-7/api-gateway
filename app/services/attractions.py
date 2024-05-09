@@ -23,6 +23,7 @@ def parse_attraction_by_id(data: dict):
         is_saved=data["is_saved"],
         user_rating=data["user_rating"],
         is_done=data["is_done"],
+        types=data["types"],
     )
 
 
@@ -39,6 +40,7 @@ def parse_attraction_info(data: dict):
         photo=data["photo"],
         avg_rating=data["avg_rating"],
         liked_count=data["liked_count"],
+        types=data["types"],
     )
 
 

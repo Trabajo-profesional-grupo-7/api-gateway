@@ -8,15 +8,18 @@ from fastapi.responses import Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.attractions_schemas.attractions import (
-    AttractionByID, AttractionByText, AutocompleteAttractions,
-    ScheduleAttraction, SearchAttractionByText)
-from app.services.attractions import (parse_attraction_by_id,
-                                      parse_attraction_list_info)
-from app.services.authentication_service import (check_authentication,
-                                                 get_user_id)
+    AttractionByID,
+    AttractionByText,
+    AttractionsFilter,
+    AutocompleteAttractions,
+    InteractiveAttraction,
+    ScheduleAttraction,
+    SearchAttractionByText,
+)
+from app.services.attractions import parse_attraction_by_id, parse_attraction_list_info
+from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
-from app.utils.api_exception import (APIException, APIExceptionToHTTP,
-                                     HTTPException)
+from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
 
 ATTRACTIONS_URL = os.getenv("ATTRACTIONS_URL")
@@ -141,25 +144,20 @@ def get_nearby_attractions(
     latitude: float,
     longitude: float,
     radius: float,
-    attraction_types: List[str] = Query(
-        None,
-        title="Attraction Types",
-        description="Filter by attraction types",
-    ),
+    attraction_types: Optional[AttractionsFilter] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
-
             url = (
                 f"{ATTRACTIONS_URL}/attractions/nearby/{latitude}/{longitude}/{radius}"
             )
+            params = {}
 
-            if attraction_types:
-                types = urllib.parse.quote(",".join(attraction_types))
-                url += f"?attraction_types={types}"
+            if attraction_types and attraction_types.attraction_types:
+                params["attraction_types"] = attraction_types.attraction_types
 
-            response = requests.post(url)
+            response = requests.post(url, json=params)
 
             handle_response_error(201, response)
 
@@ -290,7 +288,7 @@ def save_attraction(
 
             data = {
                 "user_id": current_user_id,
-                "attraction_id": attraction_id,
+                "attraction_name": attraction_id,
             }
 
             response = requests.post(f"{ATTRACTIONS_URL}/attractions/save", json=data)
@@ -298,7 +296,13 @@ def save_attraction(
             handle_response_error(201, response)
 
             attractions_info = response.json()
-            return attractions_info
+            return InteractiveAttraction.model_construct(
+                user_id=attractions_info["user_id"],
+                attraction_id=attractions_info["attraction_id"],
+                attraction_name=attractions_info["attraction_name"],
+                attraction_country=attractions_info["attraction_country"],
+                attraction_city=attractions_info["attraction_id"],
+            )
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -495,7 +499,15 @@ def mark_as_done_attraction(
 
             handle_response_error(201, response)
 
-            return response.json()
+            attraction_info = response.json()
+
+            return InteractiveAttraction.model_construct(
+                user_id=attraction_info["user_id"],
+                attraction_id=attraction_info["attraction_id"],
+                attraction_name=attraction_info["attraction_name"],
+                attraction_country=attraction_info["attraction_country"],
+                attraction_city=attraction_info["attraction_id"],
+            )
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -736,7 +748,15 @@ def schedule_attraction(
 
             handle_response_error(201, response)
 
-            return response.json()
+            attraction_info = response.json()
+
+            return InteractiveAttraction.model_construct(
+                user_id=attraction_info["user_id"],
+                attraction_id=attraction_info["attraction_id"],
+                attraction_name=attraction_info["attraction_name"],
+                attraction_country=attraction_info["attraction_country"],
+                attraction_city=attraction_info["attraction_id"],
+            )
     except HTTPException as e:
         raise e
     except APIException as e:

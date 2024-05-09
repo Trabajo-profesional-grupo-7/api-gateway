@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -49,6 +49,10 @@ class Comment(BaseModel):
     comment: str
 
 
+class AttractionsFilter(BaseModel):
+    attraction_types: Optional[List[str]] = None
+
+
 class AttractionByUser(BaseModel):
     attraction_id: str
     attraction_name: str
@@ -63,6 +67,7 @@ class AttractionByUser(BaseModel):
     is_saved: bool = False
     user_rating: int = None
     is_done: bool = False
+    types: List[str] = []
 
 
 class Attraction(BaseModel):
@@ -74,3 +79,12 @@ class Attraction(BaseModel):
     photo: str = None
     avg_rating: float
     liked_count: int
+    types: List[str] = []
+
+
+class InteractiveAttraction(BaseModel):
+    user_id: int
+    attraction_id: str
+    attraction_name: str
+    attraction_country: str
+    attraction_city: str
