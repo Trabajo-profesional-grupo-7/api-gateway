@@ -1,24 +1,16 @@
 import os
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 import requests
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.schemas.external_services_schemas.chatbot import (
-    AssistantResponse,
-    ChatMessage,
-    Conversation,
-)
+from app.schemas.external_services_schemas.chatbot import AssistantResponse, ChatMessage
 from app.schemas.external_services_schemas.cities import Cities
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
-from app.schemas.external_services_schemas.weather import (
-    DayWeather,
-    FiveDayWeather,
-    Weather,
-)
+from app.schemas.external_services_schemas.weather import FiveDayWeather
 from app.services.authentication_service import check_authentication, get_user_id
 from app.services.external_services.cities_services import parse_cities
 from app.services.external_services.weather_services import parse_weather_days
@@ -223,23 +215,17 @@ async def send_message(
     description="Get cities names",
     response_model=Cities,
 )
-async def get_cities_name(
-    keyword: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-):
+async def get_cities_name(keyword: str):
     try:
-        if check_authentication(credentials):
-            user_id = get_user_id(credentials)
+        response = requests.get(
+            f"{EXTERNAL_SERVICES_URL}/cities", params={"keyword": keyword}
+        )
 
-            response = requests.get(
-                f"{EXTERNAL_SERVICES_URL}/cities", params={"keyword": keyword}
-            )
+        handle_response_error(200, response)
 
-            handle_response_error(200, response)
+        cities = response.json()
 
-            cities = response.json()
-
-            return parse_cities(cities["cities"])
+        return parse_cities(cities["cities"])
     except HTTPException as e:
         raise e
     except APIException as e:
