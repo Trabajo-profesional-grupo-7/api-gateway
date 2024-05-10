@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     birth_date: Optional[date] = None
     preferences: Optional[List[str]] = []
+    city: Optional[str] = None
 
 
 class UserCreate(UserBase):
