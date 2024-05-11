@@ -722,7 +722,7 @@ def update_comment(
 
 
 @router.post(
-    "/attractions/scheduled",
+    "/attractions/schedule",
     status_code=201,
     tags=["Schedule Attraction"],
     description="Schedules an attraction for a user at a certain timestamp",
@@ -733,17 +733,17 @@ def schedule_attraction(
 ):
     try:
         if check_authentication(credentials):
-
-            attraction_scheduled = data.dict()
-            attraction_scheduled["user_id"] = get_user_id(credentials)
-
-            attraction_scheduled["scheduled_time"] = attraction_scheduled[
-                "scheduled_time"
-            ].isoformat()
+            attraction_id = data.attraction_id
+            user_id = get_user_id(credentials)
+            datetime = data.scheduled_time.isoformat()
 
             response = requests.post(
-                f"{ATTRACTIONS_URL}/attractions/scheduled",
-                json=attraction_scheduled,
+                f"{ATTRACTIONS_URL}/attractions/schedule",
+                json={
+                    "user_id": user_id,
+                    "attraction_id": attraction_id,
+                    "datetime": datetime,
+                },
             )
 
             handle_response_error(201, response)
@@ -751,11 +751,11 @@ def schedule_attraction(
             attraction_info = response.json()
 
             return InteractiveAttraction.model_construct(
-                user_id=attraction_info["user_id"],
-                attraction_id=attraction_info["attraction_id"],
-                attraction_name=attraction_info["attraction_name"],
-                attraction_country=attraction_info["attraction_country"],
-                attraction_city=attraction_info["attraction_id"],
+                user_id=user_id,
+                attraction_id=attraction_id,
+                attraction_name="",
+                attraction_country="",
+                attraction_city="",
             )
     except HTTPException as e:
         raise e
