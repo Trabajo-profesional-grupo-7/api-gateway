@@ -44,6 +44,7 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
                 birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
                 preferences=response_data["preferences"],
                 id=response_data["id"],
+                city=response_data["city"],
             )
     except HTTPException as e:
         raise e
