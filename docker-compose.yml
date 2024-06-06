@@ -5,8 +5,8 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    hostname: api-gateway
     container_name: api-gateway
+    image: aws/api-gateway
     restart: always
     ports:
       - ${PORT}:8001
@@ -14,3 +14,4 @@ services:
       - ATTRACTIONS_URL=${ATTRACTIONS_URL}
       - EXTERNAL_SERVICES_URL=${EXTERNAL_SERVICES_URL}
       - AUTHENTICATION_URL=${AUTHENTICATION_URL}
+      - PLANNER_URL=${PLANNER_URL}

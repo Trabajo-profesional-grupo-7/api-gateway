@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.users_schemas.users import User, UserBase
-from app.services.authentication_service import check_authentication
+from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP, HTTPException
 from app.utils.constants import *
@@ -28,11 +28,9 @@ security = HTTPBearer()
 )
 def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
-        if check_authentication(credentials):
-            response = requests.get(
-                f"{AUTHENTICATION_URL}/users",
-                headers={"Authorization": f"Bearer {credentials.credentials}"},
-            )
+        user_id = get_user_id(credentials)
+        if user_id:
+            response = requests.get(f"{AUTHENTICATION_URL}/users/{user_id}")
 
             handle_response_error(200, response)
 
