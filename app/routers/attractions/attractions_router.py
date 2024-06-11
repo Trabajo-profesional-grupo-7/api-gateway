@@ -288,21 +288,14 @@ def save_attraction(
 
             data = {
                 "user_id": current_user_id,
-                "attraction_name": attraction_id,
+                "attraction_id": attraction_id,
             }
 
             response = requests.post(f"{ATTRACTIONS_URL}/attractions/save", json=data)
 
             handle_response_error(201, response)
 
-            attractions_info = response.json()
-            return InteractiveAttraction.model_construct(
-                user_id=attractions_info["user_id"],
-                attraction_id=attractions_info["attraction_id"],
-                attraction_name=attractions_info["attraction_name"],
-                attraction_country=attractions_info["attraction_country"],
-                attraction_city=attractions_info["attraction_id"],
-            )
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -499,15 +492,7 @@ def mark_as_done_attraction(
 
             handle_response_error(201, response)
 
-            attraction_info = response.json()
-
-            return InteractiveAttraction.model_construct(
-                user_id=attraction_info["user_id"],
-                attraction_id=attraction_info["attraction_id"],
-                attraction_name=attraction_info["attraction_name"],
-                attraction_country=attraction_info["attraction_country"],
-                attraction_city=attraction_info["attraction_id"],
-            )
+            return response.json()
     except HTTPException as e:
         raise e
     except APIException as e:
