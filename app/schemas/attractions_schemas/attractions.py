@@ -68,6 +68,9 @@ class AttractionByUser(BaseModel):
     user_rating: int = None
     is_done: bool = False
     types: List[str] = []
+    editorial_summary: str
+    google_maps_uri: str
+    formatted_address: str
 
 
 class Attraction(BaseModel):

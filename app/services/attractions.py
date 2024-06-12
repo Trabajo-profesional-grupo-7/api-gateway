@@ -24,6 +24,9 @@ def parse_attraction_by_id(data: dict):
         user_rating=data["user_rating"],
         is_done=data["is_done"],
         types=data["types"],
+        editorial_summary=data["editorial_summary"],
+        google_maps_uri=data["google_maps_uri"],
+        formatted_address=data["formatted_address"],
     )
 
 
