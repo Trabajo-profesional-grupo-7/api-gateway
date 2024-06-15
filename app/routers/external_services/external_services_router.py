@@ -149,16 +149,19 @@ def currency_conversor(
     description="Start conversation",
 )
 async def init_conversation(
+    latitude: float,
+    longitud: float,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
             user_id = get_user_id(credentials)
             response = requests.post(
-                f"{EXTERNAL_SERVICES_URL}/chatbot/init",
-                headers={"Authorization": f"Bearer {credentials.credentials}"},
+                f"{EXTERNAL_SERVICES_URL}/chatbot/create",
                 params={
                     "user_id": user_id,
+                    "latitud": latitude,
+                    "longitud": longitud,
                 },
             )
 
