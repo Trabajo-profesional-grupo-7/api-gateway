@@ -22,6 +22,7 @@ class UserId(BaseModel):
 
 class User(UserBase):
     id: int
+    avatar_link: Optional[str] = None
 
     class Config:
         from_attributes = True

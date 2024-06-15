@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
+from typing import Annotated
 
 import requests
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.schemas.users_schemas.users import User, UserBase
@@ -37,12 +38,13 @@ def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(securit
             response_data = response.json()
 
             return User.model_construct(
+                id=response_data["id"],
                 username=response_data["username"],
                 email=response_data["email"],
                 birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
                 preferences=response_data["preferences"],
-                id=response_data["id"],
                 city=response_data["city"],
+                avatar_link=response_data["avatar_link"],
             )
     except HTTPException as e:
         raise e
@@ -76,11 +78,51 @@ def update_user_profile(
             response_data = response.json()
 
             return User.model_construct(
+                id=response_data["id"],
                 username=response_data["username"],
                 email=response_data["email"],
                 birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
                 preferences=response_data["preferences"],
+                city=response_data["city"],
+                avatar_link=response_data["avatar_link"],
+            )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+@router.post(
+    "/users/avatar",
+    tags=["Users"],
+    status_code=200,
+    response_model=User,
+    description="Update user avatar",
+)
+def update_user_avatar(
+    avatar: Annotated[UploadFile, File()],
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            response = requests.post(
+                f"{AUTHENTICATION_URL}/users/avatar",
+                headers={"Authorization": f"Bearer {credentials.credentials}"},
+                files=[("avatar", (avatar.filename, avatar.file, avatar.content_type))],
+            )
+
+            handle_response_error(200, response)
+
+            response_data = response.json()
+
+            return User.model_construct(
                 id=response_data["id"],
+                username=response_data["username"],
+                email=response_data["email"],
+                birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
+                preferences=response_data["preferences"],
+                city=response_data["city"],
+                avatar_link=response_data["avatar_link"],
             )
     except HTTPException as e:
         raise e
@@ -111,11 +153,13 @@ def delete_user_profile(credentials: HTTPAuthorizationCredentials = Depends(secu
             response_data = response.json()
 
             return User.model_construct(
+                id=response_data["id"],
                 username=response_data["username"],
                 email=response_data["email"],
                 birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
                 preferences=response_data["preferences"],
-                id=response_data["id"],
+                city=response_data["city"],
+                avatar_link=response_data["avatar_link"],
             )
     except HTTPException as e:
         raise e
