@@ -95,6 +95,7 @@ def create_user(user: UserCreate):
             "birth_date": user.birth_date.isoformat(),
             "preferences": user.preferences,
             "password": user.password,
+            "fcm_token": user.fcm_token,
         }
 
         response = requests.post(f"{AUTHENTICATION_URL}/users/signup", json=user_data)

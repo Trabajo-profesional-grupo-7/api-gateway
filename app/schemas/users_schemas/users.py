@@ -14,6 +14,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field("password", min_length=8)
+    fcm_token: str
 
 
 class UserId(BaseModel):
