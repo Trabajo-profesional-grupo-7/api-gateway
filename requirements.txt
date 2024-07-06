@@ -5,3 +5,4 @@ requests==2.26.0
 email-validator==2.1.0.post1
 awscli==1.32.108
 python-multipart==0.0.9
+pytest==8.0.0
