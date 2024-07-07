@@ -4,7 +4,9 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.services.authentication_service import check_authentication
+from app.routers.planner.planner_queue import queue_plan
+from app.schemas.planner_schemas.planner import PlanMetaData
+from app.services.authentication_service import check_authentication, get_user_id
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import APIException, APIExceptionToHTTP
 
@@ -14,7 +16,22 @@ router = APIRouter()
 security = HTTPBearer()
 
 
-@router.get("/plan/user/{id}")
+@router.post("/plan", tags=["Planner"])
+def create_plan(
+    plan_metadata: PlanMetaData,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+            queue_plan(user_id, plan_metadata)
+
+            return "Plan queued"
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+@router.get("/plan/user/{id}", tags=["Planner"])
 def get_plan(id: int, credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         if check_authentication(credentials):
