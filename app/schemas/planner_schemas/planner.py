@@ -8,3 +8,9 @@ class PlanMetaData(BaseModel):
     destination: str
     init_date: date
     end_date: date
+
+
+class AttractionPlan(BaseModel):
+    plan_id: str
+    date: str
+    attraction_id: str
