@@ -51,22 +51,15 @@ jobs:
             --build-arg PLANNER_URL="${{ secrets.PLANNER_URL }}" \
             --build-arg AUTHENTICATION_URL="${{ secrets.AUTHENTICATION_URL }}" \
             --build-arg QUEUE_URL="${{ secrets.QUEUE_URL }}" \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+      - name: Deploy to ECS
+        uses: imehedi/actions-awscli-v2@latest
         with:
-          task-definition: aws-task-definition.json
-          container-name: ${{ env.AWS_ECR_REPOSITORY_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.AWS_ECS_SERVICE_NAME }}
-          cluster: ${{ env.AWS_ECS_CLUSTER_NAME }}
-          wait-for-service-stability: true
+          args: ecs update-service --cluster ${{ env.AWS_ECS_CLUSTER_NAME }} --service ${{ env.AWS_ECS_SERVICE_NAME }} --force-new-deployment
+        env:
+          aws-access-key-id: ${{ secrets.AWS_IAM_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_IAM_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
