@@ -1,5 +1,5 @@
 {
-  "family": "GATEWAY-TASK",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-2:339712902999:task-definition/GATEWAY-TASK:20",
   "containerDefinitions": [
     {
       "name": "GATEWAY-CONTAINER",
@@ -35,14 +35,52 @@
       "systemControls": []
     }
   ],
+  "family": "GATEWAY-TASK",
   "taskRoleArn": "arn:aws:iam::339712902999:role/ecsTaskExecutionRole",
   "executionRoleArn": "arn:aws:iam::339712902999:role/ecsTaskExecutionRole",
   "networkMode": "bridge",
+  "revision": 20,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+    {
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.task-iam-role"
+    },
+    {
+      "name": "ecs.capability.container-ordering"
+    },
+    {
+      "name": "ecs.capability.execution-role-ecr-pull"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": ["EC2"],
   "requiresCompatibilities": ["EC2"],
   "cpu": "256",
   "memory": "512",
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
-  }
+  },
+  "registeredAt": "2024-07-10T01:15:24.794Z",
+  "registeredBy": "arn:aws:iam::339712902999:root",
+  "tags": []
 }
