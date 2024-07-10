@@ -15,44 +15,7 @@
         }
       ],
       "essential": true,
-      "environment": [
-        {
-          "name": "EXTERNAL_SERVICES_URL",
-          "value": "http://external-services-api.ss:8002"
-        },
-        {
-          "name": "PORT",
-          "value": "80"
-        },
-        {
-          "name": "ATTRACTIONS_URL",
-          "value": "http://attractions-api.ss:8003"
-        },
-        {
-          "name": "AWS_ACCESS_KEY_ID",
-          "value": "AKIAYS2NWZ23Y7DYJUEX"
-        },
-        {
-          "name": "NOTIFICATIONS_URL",
-          "value": "http://notifications-api.ss:8005"
-        },
-        {
-          "name": "AWS_SECRET_ACCESS_KEY",
-          "value": "l/TvVI5Vi6O8/daGKrO5MnOa13yRIlc05rIyFRFH"
-        },
-        {
-          "name": "PLANNER_URL",
-          "value": "http://planner-api.ss:8004"
-        },
-        {
-          "name": "AUTHENTICATION_URL",
-          "value": "http://users-api.ss:8000"
-        },
-        {
-          "name": "QUEUE_URL",
-          "value": "https://sqs.us-east-2.amazonaws.com/590184107703/queue.fifo"
-        }
-      ],
+      "environment": [],
       "environmentFiles": [],
       "mountPoints": [],
       "volumesFrom": [],
