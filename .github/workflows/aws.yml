@@ -14,7 +14,7 @@ jobs:
       AWS_DEFAULT_REGION: us-east-2
       AWS_ECR_REPOSITORY_NAME: gateway
       AWS_ECS_SERVICE_NAME: GATEWAY-SERVICE
-      AWS_ECS_CLUSTER_NAME: ECS-CLUSTER
+      AWS_ECS_CLUSTER_NAME: T3-LARGE-CLUSTER
 
     steps:
       - name: Checkout
