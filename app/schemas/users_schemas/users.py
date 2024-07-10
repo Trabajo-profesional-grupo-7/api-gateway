@@ -9,10 +9,12 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     birth_date: Optional[date] = None
     preferences: Optional[List[str]] = []
+    city: Optional[str] = None
 
 
 class UserCreate(UserBase):
     password: str = Field("password", min_length=8)
+    fcm_token: str
 
 
 class UserId(BaseModel):
@@ -21,6 +23,7 @@ class UserId(BaseModel):
 
 class User(UserBase):
     id: int
+    avatar_link: Optional[str] = None
 
     class Config:
         from_attributes = True

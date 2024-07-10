@@ -1,14 +1,19 @@
 import os
 from datetime import date
+from typing import Optional
 
 import requests
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.schemas.external_services_schemas.chatbot import AssistantResponse, ChatMessage
+from app.schemas.external_services_schemas.cities import Cities
 from app.schemas.external_services_schemas.currency import Currency
 from app.schemas.external_services_schemas.flights import FlightInfo
-from app.schemas.external_services_schemas.weather import Weather
-from app.services.authentication_service import check_authentication
+from app.schemas.external_services_schemas.weather import FiveDayWeather
+from app.services.authentication_service import check_authentication, get_user_id
+from app.services.external_services.cities_services import parse_cities
+from app.services.external_services.weather_services import parse_weather_days
 from app.services.handle_error_service import handle_response_error
 from app.utils.api_exception import *
 from app.utils.constants import *
@@ -65,31 +70,27 @@ async def flight_information(
     tags=["Weather"],
     status_code=200,
     description="Location weather",
-    response_model=Weather,
+    response_model=FiveDayWeather,
 )
 def location_weather(
-    location: str, credentials: HTTPAuthorizationCredentials = Depends(security)
+    city: str,
+    province: Optional[str] = None,
+    country: Optional[str] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     try:
         if check_authentication(credentials):
             response = requests.get(
                 f"{EXTERNAL_SERVICES_URL}/weather",
-                params={
-                    "location": location,
-                },
+                params={"city": city, "province": province, "country": country},
             )
 
             handle_response_error(200, response)
 
             weather_data = response.json()
 
-            return Weather.model_construct(
-                humidity=weather_data["humidity"],
-                precipitation_probability=weather_data["precipitation_probability"],
-                temperature=weather_data["temperature"],
-                uv_index=weather_data["uv_index"],
-                visibility=weather_data["visibility"],
-            )
+            return parse_weather_days(weather_data)
+
     except HTTPException as e:
         raise e
     except APIException as e:
@@ -132,6 +133,102 @@ def currency_conversor(
                 target_code=currency_data["target_code"],
                 conversion=currency_data["conversion"],
             )
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+# Chatbot
+
+
+@router.post(
+    "/chatbot/init",
+    tags=["Chatbot"],
+    status_code=201,
+    description="Start conversation",
+)
+async def init_conversation(
+    latitude: float,
+    longitude: float,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+            response = requests.post(
+                f"{EXTERNAL_SERVICES_URL}/chatbot/init",
+                params={
+                    "user_id": user_id,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                },
+            )
+
+            handle_response_error(201, response)
+
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+@router.post(
+    "/chatbot/send_message",
+    tags=["Chatbot"],
+    status_code=201,
+    description="Send message to the assistant",
+    response_model=AssistantResponse,
+)
+async def send_message(
+    message: ChatMessage,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        if check_authentication(credentials):
+            user_id = get_user_id(credentials)
+
+            response = requests.post(
+                f"{EXTERNAL_SERVICES_URL}/chatbot/send_message/{user_id}",
+                json={"message": message.text},
+            )
+
+            handle_response_error(201, response)
+
+            assistant_response = dict(response.json())
+
+            return AssistantResponse.model_construct(
+                role=assistant_response["role"],
+                message=assistant_response["message"],
+            )
+
+    except HTTPException as e:
+        raise e
+    except APIException as e:
+        raise APIExceptionToHTTP().convert(e)
+
+
+###########
+#  Cities #
+###########
+@router.get(
+    "/cities",
+    tags=["Cities"],
+    status_code=200,
+    description="Get cities names",
+    response_model=Cities,
+)
+async def get_cities_name(keyword: str):
+    try:
+        response = requests.get(
+            f"{EXTERNAL_SERVICES_URL}/cities", params={"keyword": keyword}
+        )
+
+        handle_response_error(200, response)
+
+        cities = response.json()
+
+        return parse_cities(cities["cities"])
     except HTTPException as e:
         raise e
     except APIException as e:

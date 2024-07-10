@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import Annotated
 
 import requests
@@ -37,7 +38,7 @@ def update_password(
         if check_authentication(credentials):
 
             response = requests.patch(
-                f"{AUTHENTICATION_URL}/password/update",
+                f"{AUTHENTICATION_URL}/users/password/update",
                 json=update_data.dict(),
                 headers={
                     "Authorization": f"{credentials.scheme} {credentials.credentials}"
@@ -72,7 +73,7 @@ def init_recover_password(
     try:
 
         response = requests.post(
-            f"{AUTHENTICATION_URL}/password/recover",
+            f"{AUTHENTICATION_URL}/users/password/recover",
             json=recover_data.dict(),
         )
 
@@ -82,7 +83,9 @@ def init_recover_password(
 
         return PasswordRecover.model_construct(
             user_id=recover["user_id"],
-            emited_datetime=recover["emited_datetime"].isoformat(),
+            emited_datetime=datetime.strptime(
+                recover["emited_datetime"], "%Y-%m-%dT%H:%M:%S.%f"
+            ),
             leftover_attempts=recover["leftover_attempts"],
         )
 
@@ -104,7 +107,7 @@ def init_recover_password(
 def recover_password(recover_data: UpdateRecoverPassword):
     try:
         response = requests.put(
-            f"{AUTHENTICATION_URL}/password/recover",
+            f"{AUTHENTICATION_URL}/users/password/recover",
             json=recover_data.dict(),
         )
 

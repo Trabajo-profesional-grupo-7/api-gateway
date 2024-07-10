@@ -91,9 +91,11 @@ def create_user(user: UserCreate):
         user_data = {
             "username": user.username,
             "email": user.email,
+            "city": user.city,
             "birth_date": user.birth_date.isoformat(),
             "preferences": user.preferences,
             "password": user.password,
+            "fcm_token": user.fcm_token,
         }
 
         response = requests.post(f"{AUTHENTICATION_URL}/users/signup", json=user_data)
@@ -105,6 +107,7 @@ def create_user(user: UserCreate):
         return User.model_construct(
             username=response_data["username"],
             email=response_data["email"],
+            city=response_data["city"],
             birth_date=datetime.fromisoformat(response_data["birth_date"]).date(),
             preferences=response_data["preferences"],
             id=response_data["id"],

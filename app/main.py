@@ -6,6 +6,10 @@ from app.routers.attractions.attractions_router import router as attraction_rout
 from app.routers.external_services.external_services_router import (
     router as external_services_router,
 )
+from app.routers.notifications.notifications_router import (
+    router as notifications_router,
+)
+from app.routers.planner.planner_router import router as planner_router
 from app.routers.users.authentication_router import router as authentication_router
 from app.routers.users.password_router import router as password_router
 from app.routers.users.users_router import router as users_router
@@ -26,6 +30,8 @@ app.include_router(users_router)
 app.include_router(password_router)
 app.include_router(attraction_router)
 app.include_router(external_services_router)
+app.include_router(notifications_router)
+app.include_router(planner_router)
 
 
 @app.get("/", include_in_schema=False)
