@@ -4,8 +4,6 @@ WORKDIR /code
 
 RUN apt update && apt install curl -y
  
-COPY ./aws-task-definition.json /code/aws-task-definition.json
-
 COPY ./requirements.txt /code/requirements.txt
  
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
