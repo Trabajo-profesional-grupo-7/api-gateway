@@ -1,8 +1,8 @@
 {
-  "taskDefinitionArn": "arn:aws:ecs:us-east-2:339712902999:task-definition/GATEWAY-TASK:20",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-2:339712902999:task-definition/GATEWAY-TASK:21",
   "containerDefinitions": [
     {
-      "name": "GATEWAY-CONTAINER",
+      "name": "gateway",
       "image": "339712902999.dkr.ecr.us-east-2.amazonaws.com/gateway:latest",
       "cpu": 0,
       "portMappings": [
@@ -15,7 +15,44 @@
         }
       ],
       "essential": true,
-      "environment": [],
+      "environment": [
+        {
+          "name": "EXTERNAL_SERVICES_URL",
+          "value": "http://external-services-api.ss:8002"
+        },
+        {
+          "name": "PORT",
+          "value": "80"
+        },
+        {
+          "name": "ATTRACTIONS_URL",
+          "value": "http://attractions-api.ss:8003"
+        },
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "value": "AKIAYS2NWZ23Y7DYJUEX"
+        },
+        {
+          "name": "NOTIFICATIONS_URL",
+          "value": "http://notifications-api.ss:8005"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "value": "l/TvVI5Vi6O8/daGKrO5MnOa13yRIlc05rIyFRFH"
+        },
+        {
+          "name": "PLANNER_URL",
+          "value": "http://planner-api.ss:8004"
+        },
+        {
+          "name": "AUTHENTICATION_URL",
+          "value": "http://users-api.ss:8000"
+        },
+        {
+          "name": "QUEUE_URL",
+          "value": "https://sqs.us-east-2.amazonaws.com/590184107703/queue.fifo"
+        }
+      ],
       "environmentFiles": [],
       "mountPoints": [],
       "volumesFrom": [],
@@ -39,7 +76,7 @@
   "taskRoleArn": "arn:aws:iam::339712902999:role/ecsTaskExecutionRole",
   "executionRoleArn": "arn:aws:iam::339712902999:role/ecsTaskExecutionRole",
   "networkMode": "bridge",
-  "revision": 20,
+  "revision": 21,
   "volumes": [],
   "status": "ACTIVE",
   "requiresAttributes": [
@@ -80,7 +117,7 @@
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
   },
-  "registeredAt": "2024-07-10T01:15:24.794Z",
+  "registeredAt": "2024-07-10T05:03:09.095Z",
   "registeredBy": "arn:aws:iam::339712902999:root",
   "tags": []
 }
